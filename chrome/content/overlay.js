@@ -6,8 +6,13 @@ var Pang =
  timeout: 6000,
  interval: 30000,
  tmr: null,
+ ttTime: null,
+ ttTimeout: null,
  init: function()
  {
+  let loc = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties');
+  Pang.ttTimeout = loc.GetStringFromName('ping.timeout');
+  Pang.ttTime = loc.GetStringFromName('ping.time');
   Pang.cache = new Map();
   let progressListener =
   {
@@ -157,8 +162,7 @@ var Pang =
   else if (t > Pang.medium)
    color = 'yellow';   
   document.getElementById('pang-tb').className = color;
-  let ttTime = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties').GetStringFromName('ping.time');
-  ttTime = ttTime.replace('%1', t);
+  let ttTime = Pang.ttTime.replace('%1', t);
   document.getElementById('pang-tb').setAttribute('tooltiptext', ttTime);
  },
  showTimeout: function()
@@ -166,8 +170,7 @@ var Pang =
   if (document.getElementById('pang-tb') === null)
    return;
   document.getElementById('pang-tb').className = 'timeout';
-  let ttTimeout = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties').GetStringFromName('ping.timeout');
-  document.getElementById('pang-tb').setAttribute('tooltiptext', ttTimeout);
+  document.getElementById('pang-tb').setAttribute('tooltiptext', Pang.ttTimeout);
  }
 };
 window.addEventListener('load', Pang.init, false);
