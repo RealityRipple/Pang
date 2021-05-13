@@ -1,5 +1,7 @@
 <!ENTITY pang.increment.title "Interval:">
 <!ENTITY pang.increment.desc "Seconds to wait before updating the ping. A value of 0 will only ping the server one time. (Default: 30s)">
+<!ENTITY pang.delay.title "Delay:">
+<!ENTITY pang.delay.desc "Milliseconds to wait before the initial ping. A value of 0 will remove the delay. (Default: 300ms)">
 <!ENTITY pang.timeout.title "Timeout:">
 <!ENTITY pang.timeout.desc "Seconds to wait before giving up on ping response. (Default: 6s)">
 <!ENTITY pang.medium.title "Medium Ping:">

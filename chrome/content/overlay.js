@@ -16,7 +16,7 @@ var Pang =
   Pang.cache = new Map();
   let progressListener =
   {
-   onLocationChange : Pang.onLocationChange,
+   onLocationChange : Pang.waitOnLocationChange,
    onProgressChange : function() {},
    onSecurityChange : function() {},
    onStateChange : function() {},
@@ -24,8 +24,60 @@ var Pang =
   };
   window.getBrowser().addProgressListener(progressListener);
  },
+ getPath: function(wnd)
+ {
+  let currentURI = wnd.getBrowser().selectedBrowser.currentURI;
+  if (currentURI.spec.startsWith('about:reader?url='))
+   return null;
+  if (currentURI.scheme === 'view-source')
+   return null;
+  if (currentURI.scheme === 'jar')
+   return null;
+  if (currentURI.scheme === 'chrome')
+   return null;
+  if (currentURI.scheme === 'about')
+   return null;
+  return currentURI.prePath + '/.well-known/time';
+ },
+ waitOnLocationChange: function()
+ {
+  if (document.getElementById('pang-tb') === null)
+   return;
+  let delay = 300;
+  let sPath = Pang.getPath(window);
+  if (sPath === null)
+  {
+   Pang.showNull();
+   return;
+  }
+  let cached = Pang.cache.get(sPath);
+  if (cached)
+  {
+   let stored = cached[0];
+   if (stored === -1)
+    Pang.showTimeout();
+   else
+    Pang.showResult(stored);
+  }
+  let prefs = Components.classes['@mozilla.org/preferences-service;1'].getService(Components.interfaces.nsIPrefBranch);
+  if (prefs.prefHasUserValue('extensions.pang.delay'))
+   delay = prefs.getIntPref('extensions.pang.delay');
+  if (delay === 0)
+  {
+   Pang.onLocationChange();
+   return;
+  }
+  if (Pang.tmr !== null)
+  {
+   window.clearTimeout(Pang.tmr);
+   Pang.tmr = null;
+  }
+  Pang.tmr = window.setTimeout(Pang.onLocationChange, delay);
+ },
  onLocationChange: function()
  {
+  if (document.getElementById('pang-tb') === null)
+   return;
   let prefs = Components.classes['@mozilla.org/preferences-service;1'].getService(Components.interfaces.nsIPrefBranch);
   if (prefs.prefHasUserValue('extensions.pang.increment'))
    Pang.interval = (prefs.getIntPref('extensions.pang.increment') * 1000);
@@ -48,35 +100,12 @@ var Pang =
    window.clearTimeout(Pang.tmr);
    Pang.tmr = null;
   }
-  if (document.getElementById('pang-tb') === null)
-   return;
-  let currentURI = window.getBrowser().selectedBrowser.currentURI;
-  if (currentURI.spec.startsWith('about:reader?url='))
+  let sPath = Pang.getPath(window);
+  if (sPath === null)
   {
    Pang.showNull();
    return;
   }
-  if (currentURI.scheme === 'view-source')
-  {
-   Pang.showNull();
-   return;
-  }
-  if (currentURI.scheme === 'jar')
-  {
-   Pang.showNull();
-   return;
-  }
-  if (currentURI.scheme === 'chrome')
-  {
-   Pang.showNull();
-   return;
-  }
-  if (currentURI.scheme === 'about')
-  {
-   Pang.showNull();
-   return;
-  }
-  let sPath = currentURI.prePath + '/.well-known/time';
   let cached = Pang.cache.get(sPath);
   var start = new Date().getTime();
   if (cached)
@@ -104,11 +133,7 @@ var Pang =
     return;
   }
   else
-  {
-   document.getElementById('pang-tb').className = 'null';
-   if (document.getElementById('pang-tb').hasAttribute('tooltiptext'))
-    document.getElementById('pang-tb').removeAttribute('tooltiptext');
-  }
+   Pang.showNull();
   let ping = new XMLHttpRequest();
   
   ping.onreadystatechange = function()
