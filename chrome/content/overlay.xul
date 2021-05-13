@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://pang/skin/overlay.css" type="text/css"?>
+<!DOCTYPE dialog SYSTEM "chrome://pang/locale/pang.dtd">
+<overlay id="timerfoxOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ <script type="application/x-javascript" src="chrome://pang/content/overlay.js"/>
+ <toolbarpalette id="BrowserToolbarPalette">
+  <toolbaritem id="pang-tb"/>
+ </toolbarpalette>
+ <toolbaritem id="pang-tb" removable="true" align="center" pack="center">
+  <image/>
+ </toolbaritem>
+</overlay>

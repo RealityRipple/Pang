@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE prefs SYSTEM "chrome://pang/locale/prefs.dtd">
+<vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ <setting type="integer" pref="extensions.pang.increment" title="&pang.increment.title;" desc="&pang.increment.desc;" min="0" max="180" />
+ <setting type="integer" pref="extensions.pang.timeout" title="&pang.timeout.title;" desc="&pang.timeout.desc;" min="5" max="60" />
+ <setting type="integer" pref="extensions.pang.medium" title="&pang.medium.title;" desc="&pang.medium.desc;" min="50" max="500" />
+ <setting type="integer" pref="extensions.pang.high" title="&pang.high.title;" desc="&pang.high.desc;" min="500" max="60000" />
+</vbox>

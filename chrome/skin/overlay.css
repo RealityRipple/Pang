@@ -1,0 +1,54 @@
+#pang-tb
+{
+ width: 11px;
+ height: 24px;
+ margin: 0 3px;
+ list-style-image: url(chrome://pang/skin/large/green.png);
+}
+#pang-tb.null
+{
+ list-style-image: url(chrome://pang/skin/large/null.png);
+}
+#pang-tb.red
+{
+ list-style-image: url(chrome://pang/skin/large/red.png);
+}
+#pang-tb.yellow
+{
+ list-style-image: url(chrome://pang/skin/large/yellow.png);
+}
+#pang-tb.green
+{
+ list-style-image: url(chrome://pang/skin/large/green.png);
+}
+#pang-tb.timeout
+{
+ list-style-image: url(chrome://pang/skin/large/timeout.png);
+}
+
+toolbar[iconsize="small"] #pang-tb
+{
+ width: 7px;
+ height: 16px;
+ list-style-image: url(chrome://pang/skin/small/green.png);
+}
+toolbar[iconsize="small"] #pang-tb.null
+{
+ list-style-image: url(chrome://pang/skin/small/null.png);
+}
+toolbar[iconsize="small"] #pang-tb.red
+{
+ list-style-image: url(chrome://pang/skin/small/red.png);
+}
+toolbar[iconsize="small"] #pang-tb.yellow
+{
+ list-style-image: url(chrome://pang/skin/small/yellow.png);
+}
+toolbar[iconsize="small"] #pang-tb.green
+{
+ list-style-image: url(chrome://pang/skin/small/green.png);
+}
+toolbar[iconsize="small"] #pang-tb.timeout
+{
+ list-style-image: url(chrome://pang/skin/small/timeout.png);
+}

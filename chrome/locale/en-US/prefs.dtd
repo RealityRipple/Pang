@@ -1,0 +1,8 @@
+<!ENTITY pang.increment.title "Interval:">
+<!ENTITY pang.increment.desc "Seconds to wait before updating the ping (0 = ping once).">
+<!ENTITY pang.timeout.title "Timeout:">
+<!ENTITY pang.timeout.desc "Seconds to wait before giving up on ping response.">
+<!ENTITY pang.medium.title "Medium Ping:">
+<!ENTITY pang.medium.desc "Minimum medium latency value.">
+<!ENTITY pang.high.title "High Ping:">
+<!ENTITY pang.high.desc "Minimum high latency value.">
