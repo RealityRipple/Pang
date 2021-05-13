@@ -13,8 +13,10 @@ var Pang =
   let loc = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties');
   Pang.ttTimeout = loc.GetStringFromName('ping.timeout');
   Pang.ttTime = loc.GetStringFromName('ping.time');
-  Pang_DB.cache = new Map();
-  Pang_DB.dns = new Map();
+  if (Pang_DB.cache === null)
+   Pang_DB.cache = new Map();
+  if (Pang_DB.dns === null)
+   Pang_DB.dns = new Map();
   let progressListener =
   {
    onLocationChange : Pang.waitOnLocationChange,
