@@ -1,6 +1,6 @@
 #pang-tb
 {
- width: 11px;
+ width: 24px;
  height: 24px;
  margin: 0 3px;
  list-style-image: url(chrome://pang/skin/large/green.png);
@@ -28,7 +28,7 @@
 
 toolbar[iconsize="small"] #pang-tb
 {
- width: 7px;
+ width: 16px;
  height: 16px;
  list-style-image: url(chrome://pang/skin/small/green.png);
 }
