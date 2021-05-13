@@ -1,6 +1,6 @@
+Components.utils.import('resource://pang/db.jsm');
 var Pang =
 {
- cache: null,
  medium: 300,
  high: 600,
  timeout: 6000,
@@ -13,7 +13,8 @@ var Pang =
   let loc = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties');
   Pang.ttTimeout = loc.GetStringFromName('ping.timeout');
   Pang.ttTime = loc.GetStringFromName('ping.time');
-  Pang.cache = new Map();
+  Pang_DB.cache = new Map();
+  Pang_DB.dns = new Map();
   let progressListener =
   {
    onLocationChange : Pang.waitOnLocationChange,
@@ -24,7 +25,48 @@ var Pang =
   };
   window.getBrowser().addProgressListener(progressListener);
  },
- getPath: function(wnd)
+ resolve: async function(uri)
+ {
+  return new Promise((resolve, reject) => {
+   let cbProxy =
+   {
+    onProxyAvailable: function(_request, _uri, proxyinfo, status)
+    {
+     if (status === Components.results.NS_ERROR_ABORT)
+     {
+      resolve('FAIL');
+      return;
+     }
+     if ((proxyinfo !== null) && (proxyinfo.flags & proxyinfo.TRANSPARENT_PROXY_RESOLVES_HOST))
+     {
+      resolve('FAIL');
+      return;
+     }
+     let curThread = Components.classes['@mozilla.org/thread-manager;1'].getService(Components.interfaces.nsIThreadManager).currentThread;
+     let dResolved = Components.classes['@mozilla.org/network/dns-service;1'].getService(Components.interfaces.nsIDNSService).asyncResolve(uri.host, 0, cbLookup, curThread);
+    }
+   };
+   let cbLookup =
+   {
+    onLookupComplete : function(_request, dnsrecord, status)
+    {
+     if (status === Components.results.NS_ERROR_ABORT)
+     {
+      resolve('FAIL');
+      return;
+     }
+     if (status !== 0 || !dnsrecord || !dnsrecord.hasMore())
+     {
+      resolve('FAIL');
+      return;
+     }
+     resolve(dnsrecord.getNextAddrAsString());
+    }
+   };
+   let pResolved = Components.classes['@mozilla.org/network/protocol-proxy-service;1'].getService(Components.interfaces.nsIProtocolProxyService).asyncResolve(uri, 0, cbProxy);
+  });
+ },
+ getPath: async function(wnd)
  {
   let currentURI = wnd.getBrowser().selectedBrowser.currentURI;
   if (currentURI.spec.startsWith('about:reader?url='))
@@ -37,20 +79,40 @@ var Pang =
    return null;
   if (currentURI.scheme === 'about')
    return null;
+  let res = Pang_DB.dns.get(currentURI.host);
+  if (res)
+   return 'http://' + res + '/.well-known/time';
+  try
+  {
+   let ip = await Pang.resolve(currentURI);
+   if (ip !== 'FAIL')
+   {
+    Pang_DB.dns.set(currentURI.host, ip);
+    return 'http://' + ip + '/.well-known/time';
+   }
+  }
+  catch (ex) {}
   return currentURI.prePath + '/.well-known/time';
  },
- waitOnLocationChange: function()
+ waitOnLocationChange: async function()
  {
   if (document.getElementById('pang-tb') === null)
    return;
+  if (Pang_DB.busy === true)
+  { 
+   window.setTimeout(Pang.waitOnLocationChange, 150);
+   return;
+  }
+  Pang_DB.busy = true;
   let delay = 300;
-  let sPath = Pang.getPath(window);
+  let sPath = await Pang.getPath(window);
   if (sPath === null)
   {
    Pang.showNull();
+   Pang_DB.busy = false;
    return;
   }
-  let cached = Pang.cache.get(sPath);
+  let cached = Pang_DB.cache.get(sPath);
   if (cached)
   {
    let stored = cached[0];
@@ -62,9 +124,10 @@ var Pang =
   let prefs = Components.classes['@mozilla.org/preferences-service;1'].getService(Components.interfaces.nsIPrefBranch);
   if (prefs.prefHasUserValue('extensions.pang.delay'))
    delay = prefs.getIntPref('extensions.pang.delay');
+  Pang_DB.busy = false;
   if (delay === 0)
   {
-   Pang.onLocationChange();
+   await Pang.onLocationChange();
    return;
   }
   if (Pang.tmr !== null)
@@ -74,10 +137,16 @@ var Pang =
   }
   Pang.tmr = window.setTimeout(Pang.onLocationChange, delay);
  },
- onLocationChange: function()
+ onLocationChange: async function()
  {
   if (document.getElementById('pang-tb') === null)
    return;
+  if (Pang_DB.busy === true)
+  {
+   window.setTimeout(Pang.onLocationChange, 150);
+   return;
+  }
+  Pang_DB.busy = true;
   let prefs = Components.classes['@mozilla.org/preferences-service;1'].getService(Components.interfaces.nsIPrefBranch);
   if (prefs.prefHasUserValue('extensions.pang.increment'))
    Pang.interval = (prefs.getIntPref('extensions.pang.increment') * 1000);
@@ -100,13 +169,14 @@ var Pang =
    window.clearTimeout(Pang.tmr);
    Pang.tmr = null;
   }
-  let sPath = Pang.getPath(window);
+  let sPath = await Pang.getPath(window);
   if (sPath === null)
   {
    Pang.showNull();
+   Pang_DB.busy = false;
    return;
   }
-  let cached = Pang.cache.get(sPath);
+  let cached = Pang_DB.cache.get(sPath);
   var start = new Date().getTime();
   if (cached)
   {
@@ -125,49 +195,44 @@ var Pang =
      {
       diff -= (start - updated);
       Pang.tmr = window.setTimeout(Pang.onLocationChange, diff);
+      Pang_DB.busy = false;
       return;
      }
     }
    }
    if (Pang.interval === 0)
+   {
+    Pang_DB.busy = false;
     return;
+   }
   }
   else
    Pang.showNull();
-  let ping = new XMLHttpRequest();
-  
-  ping.onreadystatechange = function()
+  try
   {
-   if (ping.readyState !== 4)
-    return;
+   let timeout = Pang.timeout;
+   let ab = new AbortController
+   let abid = setTimeout(() => ab.abort(), timeout);
+   let ret = await fetch(sPath, {method: 'HEAD', cache: 'no-cache', redirect: 'manual', signal: ab.signal});
+   clearTimeout(abid);
    let end = new Date().getTime();
-   Pang.cache.delete(sPath);
-   Pang.cache.set(sPath, [(end - start), end]);
+   Pang_DB.cache.delete(sPath);
+   Pang_DB.cache.set(sPath, [(end - start), end]);
    Pang.showResult(end - start);
+   Pang_DB.busy = false;
    if (Pang.interval > 0)
     Pang.tmr = window.setTimeout(Pang.onLocationChange, Pang.interval);
-  };
-  ping.ontimeout = function()
+  }
+  catch (ex)
   {
    let end = new Date().getTime();
-   Pang.cache.delete(sPath);
-   Pang.cache.set(sPath, [-1, end]);
+   Pang_DB.cache.delete(sPath);
+   Pang_DB.cache.set(sPath, [-1, end]);
    Pang.showTimeout();
+   Pang_DB.busy = false;
    if (Pang.interval > 0)
     Pang.tmr = window.setTimeout(Pang.onLocationChange, Pang.interval);
-  };
-  ping.onerror = function()
-  {
-   let end = new Date().getTime();
-   Pang.cache.delete(sPath);
-   Pang.cache.set(sPath, [-1, end]);
-   Pang.showTimeout();
-   if (Pang.interval > 0)
-    Pang.tmr = window.setTimeout(Pang.onLocationChange, Pang.interval);
-  };
-  ping.timeout = Pang.timeout;
-  ping.open('GET', sPath, true);
-  ping.send();
+  }
  },
  showNull: function()
  {
