@@ -95,6 +95,8 @@ var Pang =
      }
     }
    }
+   if (Pang.interval === 0)
+    return;
   }
   else
   {
