@@ -4,7 +4,7 @@
 <overlay id="timerfoxOverlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  <script type="application/x-javascript" src="chrome://pang/content/overlay.js"/>
  <toolbarpalette id="BrowserToolbarPalette">
-  <toolbaritem id="pang-tb"/>
+  <toolbaritem id="pang-tb" title="&pang.title;"/>
  </toolbarpalette>
  <toolbaritem id="pang-tb" removable="true" align="center" pack="center">
   <image/>
