@@ -81,16 +81,17 @@ var Pang =
    return null;
   if (currentURI.scheme === 'about')
    return null;
+  let port = (currentURI.port === -1 ? '' : ':' + currentURI.port);
   let res = Pang_DB.dns.get(currentURI.host);
   if (res)
-   return 'http://' + res + '/.well-known/time';
+   return 'http://' + res + port + '/.well-known/time';
   try
   {
    let ip = await Pang.resolve(currentURI);
    if (ip !== 'FAIL')
    {
     Pang_DB.dns.set(currentURI.host, ip);
-    return 'http://' + ip + '/.well-known/time';
+    return 'http://' + ip + port + '/.well-known/time';
    }
   }
   catch (ex) {}
