@@ -34,38 +34,62 @@ var Pang =
    {
     onProxyAvailable: function(_request, _uri, proxyinfo, status)
     {
-     if (status === Components.results.NS_ERROR_ABORT)
+     try
      {
-      resolve('FAIL');
-      return;
+      if (status === Components.results.NS_ERROR_ABORT)
+      {
+       resolve('FAIL');
+       return;
+      }
+      if ((proxyinfo !== null) && (proxyinfo.flags & proxyinfo.TRANSPARENT_PROXY_RESOLVES_HOST))
+      {
+       resolve('FAIL');
+       return;
+      }
+      let curThread = Components.classes['@mozilla.org/thread-manager;1'].getService(Components.interfaces.nsIThreadManager).currentThread;
+      let dResolved = Components.classes['@mozilla.org/network/dns-service;1'].getService(Components.interfaces.nsIDNSService).asyncResolve(uri.host, 0, cbLookup, curThread);
      }
-     if ((proxyinfo !== null) && (proxyinfo.flags & proxyinfo.TRANSPARENT_PROXY_RESOLVES_HOST))
+     catch (ex)
      {
+      console.log(ex);
       resolve('FAIL');
-      return;
      }
-     let curThread = Components.classes['@mozilla.org/thread-manager;1'].getService(Components.interfaces.nsIThreadManager).currentThread;
-     let dResolved = Components.classes['@mozilla.org/network/dns-service;1'].getService(Components.interfaces.nsIDNSService).asyncResolve(uri.host, 0, cbLookup, curThread);
     }
    };
    let cbLookup =
    {
     onLookupComplete : function(_request, dnsrecord, status)
     {
-     if (status === Components.results.NS_ERROR_ABORT)
+     try
      {
-      resolve('FAIL');
-      return;
+      if (status === Components.results.NS_ERROR_ABORT)
+      {
+       resolve('FAIL');
+       return;
+      }
+      if (status !== 0 || !dnsrecord || !dnsrecord.hasMore())
+      {
+       resolve('FAIL');
+       return;
+      }
+      resolve(dnsrecord.getNextAddrAsString());
      }
-     if (status !== 0 || !dnsrecord || !dnsrecord.hasMore())
+     catch (ex)
      {
+      console.log(ex);
       resolve('FAIL');
-      return;
      }
-     resolve(dnsrecord.getNextAddrAsString());
     }
    };
-   let pResolved = Components.classes['@mozilla.org/network/protocol-proxy-service;1'].getService(Components.interfaces.nsIProtocolProxyService).asyncResolve(uri, 0, cbProxy);
+   try
+   {
+    let pResolved = Components.classes['@mozilla.org/network/protocol-proxy-service;1'].getService(Components.interfaces.nsIProtocolProxyService).asyncResolve(uri, 0, cbProxy);
+   }
+   catch (ex)
+   {
+    console.log(ex);
+    resolve('FAIL');
+   }
   });
  },
  getPath: async function(wnd)
