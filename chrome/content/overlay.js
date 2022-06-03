@@ -105,6 +105,15 @@ var Pang =
    return null;
   if (currentURI.scheme === 'about')
    return null;
+  let blacklist = [];
+  let prefs = Components.classes['@mozilla.org/preferences-service;1'].getService(Components.interfaces.nsIPrefBranch);
+  if (prefs.prefHasUserValue('extensions.pang.blacklist'))
+   blacklist = prefs.getCharPref('extensions.pang.blacklist').split(';');
+  for (let i = 0; i < blacklist.length; i++)
+  {
+   if (currentURI.host.match(blacklist[i]))
+    return null;
+  }
   let port = (currentURI.port === -1 ? '' : ':' + currentURI.port);
   let res = Pang_DB.dns.get(currentURI.host);
   if (res)

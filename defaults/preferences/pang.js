@@ -4,3 +4,4 @@ pref("extensions.pang.delay", 300);
 pref("extensions.pang.timeout", 6);
 pref("extensions.pang.medium", 300);
 pref("extensions.pang.high", 600);
+pref("extensions.pang.blacklist", '');
