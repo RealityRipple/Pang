@@ -1,3 +1,4 @@
+Components.utils.import('resource://pang/blacklist.jsm');
 Components.utils.import('resource://pang/db.jsm');
 var Pang =
 {
@@ -10,6 +11,7 @@ var Pang =
  ttTimeout: null,
  init: function()
  {
+  Pang_Blacklist.register();
   let loc = Components.classes['@mozilla.org/intl/stringbundle;1'].getService(Components.interfaces.nsIStringBundleService).createBundle('chrome://pang/locale/pang.properties');
   Pang.ttTimeout = loc.GetStringFromName('ping.timeout');
   Pang.ttTime = loc.GetStringFromName('ping.time');
@@ -26,6 +28,10 @@ var Pang =
    onStatusChange : function() {}
   };
   window.getBrowser().addProgressListener(progressListener);
+ },
+ unload: function()
+ {
+  Pang_Blacklist.unregister();
  },
  resolve: async function(uri)
  {
@@ -300,3 +306,4 @@ var Pang =
  }
 };
 window.addEventListener('load', Pang.init, false);
+window.addEventListener('unload', Pang.unload, false);

@@ -6,4 +6,14 @@
  <setting type="integer" pref="extensions.pang.timeout" title="&pang.timeout.title;" desc="&pang.timeout.desc;" min="5" max="60" />
  <setting type="integer" pref="extensions.pang.medium" title="&pang.medium.title;" desc="&pang.medium.desc;" min="50" max="500" />
  <setting type="integer" pref="extensions.pang.high" title="&pang.high.title;" desc="&pang.high.desc;" min="500" max="60000" />
+ <setting type="control" title="&pang.blacklist.title;">
+  <vbox id="vbBlacklist">
+   <listbox id="lstBlacklist" />
+   <hbox>
+    <textbox id="txtBlacklist" />
+    <button id="cmdBlacklistAdd" label="&pang.blacklist.add;" />
+    <button id="cmdBlacklistRemove" label="&pang.blacklist.remove;" />
+   </hbox>
+  </vbox>
+ </setting>
 </vbox>

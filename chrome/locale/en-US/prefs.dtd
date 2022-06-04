@@ -8,3 +8,6 @@
 <!ENTITY pang.medium.desc "Minimum medium latency value in milliseconds. (Default: 300ms)">
 <!ENTITY pang.high.title "High Ping:">
 <!ENTITY pang.high.desc "Minimum high latency value in milliseconds. (Default: 600ms)">
+<!ENTITY pang.blacklist.title "Blacklist:">
+<!ENTITY pang.blacklist.add "Add">
+<!ENTITY pang.blacklist.remove "Remove">
